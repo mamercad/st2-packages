@@ -8,7 +8,7 @@ version: 2
 jobs:
   # Build & Test st2 packages
   packages:
-    parallelism: 1
+    parallelism: 4
     # 4CPUs & 8GB RAM CircleCI machine
     # sadly, it doesn't work with 'setup_remote_docker'
     resource_class: large
@@ -27,24 +27,18 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker:
-          version: 20.10.23
+          reusable: true    # default - false
+          exclusive: true   # default - true
+          version: 19.03.14
       - run:
           name: Ensure installation scripts are synced with their templates
           command: make .generated-files-check
       - run:
-          name: Install Docker Compose
-          environment:
-            COMPOSE_VERSION: "2.20.2"
-          command: |
-            curl -L "https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o ~/docker-compose
-            chmod +x ~/docker-compose
-            sudo mv ~/docker-compose /usr/local/bin/docker-compose
-      - run:
           name: Docker version
           command: |
             set -x
-            docker version
-            docker compose version
+            docker --version
+            docker-compose --version
       - run:
           name: Initialize packages Build Environment
           command: |
@@ -79,7 +73,7 @@ jobs:
           command: |
             # Create necessary directories
             mkdir -p ~/st2-packages/build/${DISTRO}/log/
-
+            
             # Run the build
             .circle/docker-compose2.sh build ${DISTRO}
 
@@ -116,28 +110,28 @@ jobs:
             docker volume prune --force
 
   # Deploy produced deb/rpm packages to PackageCloud staging
-  # deploy:
-  #   docker:
-  #     # The primary container is an instance of the first list image listed. Your build commands run in this container.
-  #     - image: circleci/ruby:2.4
-  #   working_directory: /tmp/deploy
-  #   environment:
-  #     - DISTROS: "bionic focal el7 el8"
-  #   steps:
-  #     - attach_workspace:
-  #         at: .
-  #     - run:
-  #         name: List workspace files
-  #         command: find . | sed 's|[^/]*/|  |g'
-  #     - run:
-  #         name: Install dependencies
-  #         command: |
-  #           set -x
-  #           sudo apt-get -y install parallel jq
-  #           gem install package_cloud
-  #     - run:
-  #         name: Deploy deb/rpm packages to PackageCloud
-  #         command: "parallel -v -j0 --line-buffer .circle/packagecloud.sh deploy {} build/{} ::: ${DISTROS}"
+  deploy:
+    docker:
+      # The primary container is an instance of the first list image listed. Your build commands run in this container.
+      - image: circleci/ruby:2.4
+    working_directory: /tmp/deploy
+    environment:
+      - DISTROS: "bionic focal el7 el8"
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: List workspace files
+          command: find . | sed 's|[^/]*/|  |g'
+      - run:
+          name: Install dependencies
+          command: |
+            set -x
+            sudo apt-get -y install parallel jq
+            gem install package_cloud
+      - run:
+          name: Deploy deb/rpm packages to PackageCloud
+          command: "parallel -v -j0 --line-buffer .circle/packagecloud.sh deploy {} build/{} ::: ${DISTROS}"
 
 # TODO: Return to workflows when "Auto-cancel redundant builds” feature is implemented for Workflows: https://discuss.circleci.com/t/auto-cancel-redundant-builds-not-working-for-workflow/13852
 # Putting everything together
@@ -146,24 +140,23 @@ workflows:
   package-test-deploy:
     jobs:
       - packages
-      # - deploy:
-      #     requires:
-      #       - packages
-      #     filters:
-      #       branches:
-      #         only:
-      #           - jammy-and-centos9
-      #           - master
-      #           - /v[0-9]+\.[0-9]+/
-      #           - feature/circleci
+      - deploy:
+          requires:
+            - packages
+          filters:
+            branches:
+              only:
+                - master
+                - /v[0-9]+\.[0-9]+/
+                - feature/circleci
 
-# experimental:
-#   notify:
-#     branches:
-#       only:
-#         - master
-#         - /v[0-9]+\.[0-9]+/
+experimental:
+  notify:
+    branches:
+      only:
+        - master
+        - /v[0-9]+\.[0-9]+/
 
-# notify:
-#   webhooks:
-#     - url: https://ci-webhooks.stackstorm.com/webhooks/build/events
+notify:
+  webhooks:
+    - url: https://ci-webhooks.stackstorm.com/webhooks/build/events
