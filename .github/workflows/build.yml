@@ -23,3 +23,7 @@ jobs:
           sha256sum --check docker-compose-Linux-x86_64.sha256
           chmod +x docker-compose-Linux-x86_64
           ./docker-compose-Linux-x86_64 version
+
+      - name: compose
+        run: |
+          ./docker-compose-Linux-x86_64 run --rm focal
