@@ -27,7 +27,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker:
-          version: "20.10.23"
+          version: 20.10.23
       - run:
           name: Ensure installation scripts are synced with their templates
           command: make .generated-files-check
