@@ -27,9 +27,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker:
-          reusable: true    # default - false
-          exclusive: true   # default - true
-          version: 19.03.14
+          version: 24.0.5
       - run:
           name: Ensure installation scripts are synced with their templates
           command: make .generated-files-check
@@ -73,7 +71,7 @@ jobs:
           command: |
             # Create necessary directories
             mkdir -p ~/st2-packages/build/${DISTRO}/log/
-            
+
             # Run the build
             .circle/docker-compose2.sh build ${DISTRO}
 
