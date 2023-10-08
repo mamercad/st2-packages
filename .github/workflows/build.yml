@@ -15,4 +15,10 @@ jobs:
         run: |
           docker version
           docker compose version
-          docker-compose-v1 version
+
+      - name: compose-v1
+        run: |
+          curl -sSL https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64 -o docker-compose-Linux-x86_64
+          curl -sSL https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64.sha256 -o docker-compose-Linux-x86_64.sha256
+          sha256sum --check docker-compose-Linux-x86_64.sha256
+          ./docker-compose-Linux-x86_64 version
