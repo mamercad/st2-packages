@@ -146,16 +146,16 @@ workflows:
   package-test-deploy:
     jobs:
       - packages
-      - deploy:
-          requires:
-            - packages
-          filters:
-            branches:
-              only:
-                - jammy-and-centos9
-                - master
-                - /v[0-9]+\.[0-9]+/
-                - feature/circleci
+      # - deploy:
+      #     requires:
+      #       - packages
+      #     filters:
+      #       branches:
+      #         only:
+      #           - jammy-and-centos9
+      #           - master
+      #           - /v[0-9]+\.[0-9]+/
+      #           - feature/circleci
 
 # experimental:
 #   notify:
