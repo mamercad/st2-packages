@@ -1,0 +1,14 @@
+name: build
+
+on:
+  push:
+    branches: [gha]
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: build
+        run: |
+          docker version
+          docker compose version
