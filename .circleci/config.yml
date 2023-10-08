@@ -116,28 +116,28 @@ jobs:
             docker volume prune --force
 
   # Deploy produced deb/rpm packages to PackageCloud staging
-  deploy:
-    docker:
-      # The primary container is an instance of the first list image listed. Your build commands run in this container.
-      - image: circleci/ruby:2.4
-    working_directory: /tmp/deploy
-    environment:
-      - DISTROS: "bionic focal el7 el8"
-    steps:
-      - attach_workspace:
-          at: .
-      - run:
-          name: List workspace files
-          command: find . | sed 's|[^/]*/|  |g'
-      - run:
-          name: Install dependencies
-          command: |
-            set -x
-            sudo apt-get -y install parallel jq
-            gem install package_cloud
-      - run:
-          name: Deploy deb/rpm packages to PackageCloud
-          command: "parallel -v -j0 --line-buffer .circle/packagecloud.sh deploy {} build/{} ::: ${DISTROS}"
+  # deploy:
+  #   docker:
+  #     # The primary container is an instance of the first list image listed. Your build commands run in this container.
+  #     - image: circleci/ruby:2.4
+  #   working_directory: /tmp/deploy
+  #   environment:
+  #     - DISTROS: "bionic focal el7 el8"
+  #   steps:
+  #     - attach_workspace:
+  #         at: .
+  #     - run:
+  #         name: List workspace files
+  #         command: find . | sed 's|[^/]*/|  |g'
+  #     - run:
+  #         name: Install dependencies
+  #         command: |
+  #           set -x
+  #           sudo apt-get -y install parallel jq
+  #           gem install package_cloud
+  #     - run:
+  #         name: Deploy deb/rpm packages to PackageCloud
+  #         command: "parallel -v -j0 --line-buffer .circle/packagecloud.sh deploy {} build/{} ::: ${DISTROS}"
 
 # TODO: Return to workflows when "Auto-cancel redundant builds” feature is implemented for Workflows: https://discuss.circleci.com/t/auto-cancel-redundant-builds-not-working-for-workflow/13852
 # Putting everything together
@@ -157,12 +157,12 @@ workflows:
                 - /v[0-9]+\.[0-9]+/
                 - feature/circleci
 
-experimental:
-  notify:
-    branches:
-      only:
-        - master
-        - /v[0-9]+\.[0-9]+/
+# experimental:
+#   notify:
+#     branches:
+#       only:
+#         - master
+#         - /v[0-9]+\.[0-9]+/
 
 # notify:
 #   webhooks:
