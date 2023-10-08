@@ -43,8 +43,8 @@ jobs:
           name: Docker version
           command: |
             set -x
-            docker --version
-            docker-compose --version
+            docker version
+            docker compose version
       - run:
           name: Initialize packages Build Environment
           command: |
